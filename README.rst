@@ -59,17 +59,23 @@ artifacts themselves are hosted in the Maven Central repository.  For
 reference, here are a few copy/paste snippets you can use for some of the common
 build systems.
 
-**SBT**::
+**SBT**
+
+.. code-block:: scala
   
     val antiXML = "no.arktekk" %% "anti-xml" % "0.5.1"
   
-**Buildr**::
+**Buildr**
+
+.. code-block:: ruby
   
     compile.with "no.arktekk:anti-xml_#{Scala.version}:jar:0.5.1"
   
-**Maven2**::
+**Maven2**
+
+.. code-block:: xml
   
-     <dependency>
+    <dependency>
       <groupId>no.arktekk</groupId>
       <artifactId>anti-xml_2.9.1</artifactId>
       <version>0.5.1</version>
