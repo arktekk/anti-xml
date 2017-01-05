@@ -1,10 +1,8 @@
-organization := "no.arktekk"
+organization := "com.al333z"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.8"
 
-crossScalaVersions := Seq("2.10.4", "2.11.2")
-
-scalacOptions := Seq("-deprecation", "-language:_")
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
 description := "anti-xml"
 
@@ -12,15 +10,10 @@ name := "anti-xml"
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
-  "org.specs2" %% "specs2" % "2.3.13" % "test"
+  "org.specs2" %% "specs2" % "2.3.13" % "test",
+  "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
 )
 
-libraryDependencies <++= (scalaBinaryVersion) { (sv) => sv match {
-    case "2.11" => Seq("org.scala-lang.modules" %% "scala-xml" % "1.0.2" % "provided")
-    case _ => Nil
-  }
-}
-      
 initialCommands in console := """import com.codecommit.antixml._"""
 
 scalacOptions in Compile in doc <++= (unmanagedSourceDirectories in Compile) map {

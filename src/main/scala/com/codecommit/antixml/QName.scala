@@ -28,6 +28,8 @@
 
 package com.codecommit.antixml
 
+import scala.language.implicitConversions
+
 case class QName(prefix: Option[String], name: String) {
   if (! Elem.isValidName(name)) {
     throw new IllegalArgumentException("Illegal attribute name, '" + name + "'")

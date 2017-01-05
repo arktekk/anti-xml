@@ -69,12 +69,8 @@ class XMLSerializerSpecs extends Specification {
     }
 
     "serialize elements with multiple prefixes correctly" in {
-      val x = """
-      <a xmlns="urn:x">
-        <b xmlns="urn:y"/>
-        <b xmlns="urn:y"/>
-      </a>"""
-      fromString(x).toString mustEqual x.trim
+      val x = """<a xmlns="urn:x"><b xmlns="urn:y"/><b xmlns="urn:y"/></a>"""
+      fromString(x).toString mustEqual x
     }
 
     /**
