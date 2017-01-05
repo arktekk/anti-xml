@@ -4,3 +4,5 @@ scala:
 jdk:
   - oraclejdk8
   - oraclejdk7
+script:
+   - travis_wait sbt ++$TRAVIS_SCALA_VERSION test
