@@ -23,8 +23,13 @@ homepage := Some(url("http://github.com/AL333Z/anti-xml"))
 
 libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
-  "org.specs2" %% "specs2" % "2.3.13" % "test",
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+  "org.specs2" %% "specs2-core" % "3.8.6",
+  "org.specs2" %% "specs2-scalacheck" % "3.8.6",
+  "org.specs2" %% "specs2-matcher-extra" % "3.8.6",
+  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+  "com.github.julien-truffaut" %% "monocle-core" % "1.4.0-M2",
+  "com.github.julien-truffaut" %% "monocle-macro" % "1.4.0-M2",
+  "org.scalaz" %% "scalaz-core" % "7.2.8"
 )
 
 initialCommands in console := """import com.codecommit.antixml._"""
