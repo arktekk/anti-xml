@@ -34,6 +34,15 @@ class XMLPathSpecs extends Specification {
       root.children.B.getOption(input) mustEqual Some(<B>B</B>.convert)
     }
 
+    "return the selected child using find" in {
+      val input =
+        <A Attr="01234">
+          <B>B</B>
+        </A>.convert
+
+      root.find("B").getOption(input) mustEqual Some(<B>B</B>.convert)
+    }
+
     "return the selected nested child" in {
       val input =
         <A Attr="01234">
@@ -43,6 +52,17 @@ class XMLPathSpecs extends Specification {
         </A>.convert
 
       root.children.B.children.C.getOption(input) mustEqual Some(<C Attr="C"></C>.convert)
+    }
+
+    "return the selected nested child using find" in {
+      val input =
+        <A Attr="01234">
+          <B>
+            <C Attr="C"></C>
+          </B>
+        </A>.convert
+
+      root.find("B").find("C").getOption(input) mustEqual Some(<C Attr="C"></C>.convert)
     }
 
     "return nothing if the selected nested child is missing" in {

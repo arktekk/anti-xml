@@ -68,6 +68,8 @@ final case class XMLPath(elem: Optional[Elem, Elem]) {
 
   lazy val children: XMLPathChildren = XMLPathChildren(elem.composeOptional(elem2ElemChildren))
 
+  def find(child: String): XMLPath = children.selectDynamic(child)
+
   def modify(f: Elem => Elem)(input: Elem): Option[Elem] = {
     val fn = Optional[Elem, Elem](e => Some(f(e)))(ei => e => ei)
 
