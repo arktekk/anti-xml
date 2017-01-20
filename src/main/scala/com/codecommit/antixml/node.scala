@@ -195,6 +195,8 @@ case class Elem(prefix: Option[String], name: String, attrs: Attributes = Attrib
 
   def addAttributes(attrs: Seq[(QName, String)]) = copy(attrs = this.attrs ++ attrs)
 
+  def removeAttribute(attr: QName) = copy(attrs = attrs.filterNot(_._1 == attr))
+
   /**
     * Use the uri in the FQName to lookup the binding, otherwise add a namespace with
     * the given default prefix. If the prefix/no prefix is already in use create a new name.

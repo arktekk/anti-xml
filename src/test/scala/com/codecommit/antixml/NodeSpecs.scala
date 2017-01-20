@@ -121,7 +121,11 @@ class NodeSpecs extends Specification with DataTables with ScalaCheck with XMLGe
     "allow legal attribute names" in {
         Elem(None, "foo", Attributes("foo" -> "bar"), NamespaceBinding.empty, Group()) must not(throwAn[IllegalArgumentException])
     }
-    
+
+    "allow attribute removal" in {
+      Elem(None, "foo", Attributes("foo" -> "bar"), NamespaceBinding.empty, Group()).removeAttribute("foo") must beEqualTo(Elem(None, "foo", Attributes(), NamespaceBinding.empty, Group()))
+    }
+
     "detect illegal attribute names" in prop { str: String =>
       name unapplySeq str match {
         case Some(_) => Elem(None, "foo", Attributes(str -> "bar"), NamespaceBinding.empty, Group()) must not(throwAn[IllegalArgumentException])
