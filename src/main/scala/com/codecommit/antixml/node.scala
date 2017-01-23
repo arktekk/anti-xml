@@ -28,7 +28,7 @@
 
 package com.codecommit.antixml
 
-import scala.collection.immutable.Map
+import scala.collection.immutable.{Iterable, Map}
 import scala.language.higherKinds
 import scalaz.{Applicative, Traverse}
 
@@ -79,7 +79,7 @@ private[antixml] object Node {
 
   /* http://www.w3.org/TR/xml/#NT-Char */
   private[this] val CharRegex =
-    """[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\x{10000}-\x{10FFFF}]*""".r
+  """[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\x{10000}-\x{10FFFF}]*""".r
 
   def hasOnlyValidChars(value: String) = CharRegex.pattern.matcher(value).matches
 
@@ -195,7 +195,13 @@ case class Elem(prefix: Option[String], name: String, attrs: Attributes = Attrib
 
   def addAttributes(attrs: Seq[(QName, String)]) = copy(attrs = this.attrs ++ attrs)
 
-  def removeAttribute(attr: QName) = copy(attrs = attrs.filterNot(_._1 == attr))
+  def removeAttribute(attr: QName) = removeAttributes(Seq(attr))
+
+  def removeAttributes(attributes: Seq[QName]) = copy(attrs = attrs.filterNot(attr => attributes.contains(attr._1)))
+
+  def modifyAttributes(attributes: Attributes) = removeAttributes(attributes.keys.toSeq).addAttributes(attributes.toSeq)
+
+  def modifyAttribute(attr: (QName, String)) = modifyAttributes(Attributes(attr))
 
   /**
     * Use the uri in the FQName to lookup the binding, otherwise add a namespace with
