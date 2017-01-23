@@ -1,5 +1,7 @@
 package com.codecommit.antixml
 
+import scala.language.implicitConversions
+
 /**
  * Allow these to be mixed in where needed, instead of having to import the package object.
  */

@@ -60,14 +60,18 @@ trait XMLGenerators {
   
   lazy val nodeSelectorGenerator: Gen[Selector[Node]] = for {
     flag <- arbitrary[Boolean]
-    xform <- arbitrary[Node => Node]
+    xform <- xFormGenerator
   } yield Selector({
     case n if flag => xform(n)
   })
-  
+
+  def xFormGenerator: Gen[Node => Node] = for {
+    node <- nodeGenerator(0)
+  } yield (_: Node) => node
+
   def groupGenerator[A <: Node](implicit arb: Arbitrary[A]): Gen[Group[A]] =
     listOf(arb.arbitrary) map Group.fromSeq
-  
+
   def nodeGenerator(depth: Int = 0): Gen[Node] = frequency(
     3 -> procInstrGenerator, 
     30 -> elemGenerator(depth), 

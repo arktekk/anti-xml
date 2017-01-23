@@ -672,7 +672,7 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
   
   "Zipper.conditionalFlatMapWithIndex" should {
     
-    "work with simple replacements" in check { (xml: Group[Node]) =>
+    "work with simple replacements" in prop { (xml: Group[Node]) =>
       val zipper = xml select *
       def f(n: Node, i: Int): Option[Seq[Node]] = n match {
         case n if (i & 1) == 0 => None
@@ -686,7 +686,7 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
       cfmwi.length mustEqual xml.length
     }
     
-    "work with complex replacements" in check { (xml: Group[Node]) =>
+    "work with complex replacements" in prop { (xml: Group[Node]) =>
       def f(n: Node, i: Int): Option[Seq[Node]] = n match {
         case n if (i & 1) == 0 => None
         case _ if (i & 2) == 0 => Some(Seq())
@@ -858,16 +858,16 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
     val elems = for(t <- texts) yield elem("Text"+t.text,t)
     val zipper = elems \ textNode(".*".r)     
     
-    "match the behavior of Group.slice for ranges in bounds" in check { (from: Int, to: Int) =>
+    "match the behavior of Group.slice for ranges in bounds" in prop { (from: Int, to: Int) =>
       val f = (from & Int.MaxValue) % zipper.length
       val t = (to & Int.MaxValue) % zipper.length
       zipper.slice(f,t).toVectorCase mustEqual texts.slice(f,t).toVectorCase
     }
-    "match the behavior of Group.slice for any range" in check { (f: Int, t: Int) =>
+    "match the behavior of Group.slice for any range" in prop { (f: Int, t: Int) =>
       zipper.slice(f,t).toVectorCase mustEqual texts.slice(f,t).toVectorCase
     }
     
-    "update the zipper context correctly for ranges in bounds" in check { (from: Int, to: Int) =>
+    "update the zipper context correctly for ranges in bounds" in prop { (from: Int, to: Int) =>
       val f = (from & Int.MaxValue) % zipper.length
       val t = (to & Int.MaxValue) % zipper.length
       
@@ -878,7 +878,7 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
       uc.toVectorCase mustEqual texts.slice(f,t).toVectorCase
     }
     
-    "update the zipper context correctly for any range" in check { (f: Int, t: Int) =>      
+    "update the zipper context correctly for any range" in prop { (f: Int, t: Int) =>
       val unselected = zipper.slice(f,t).unselect
       unselected.length mustEqual elems.length
       
@@ -886,7 +886,7 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
       uc.toVectorCase mustEqual texts.slice(f,t).toVectorCase
     }
     
-    "update the zipper context correctly for multiple slices" in check { (f1: Int, t1: Int, f2: Int, t2: Int) =>
+    "update the zipper context correctly for multiple slices" in prop { (f1: Int, t1: Int, f2: Int, t2: Int) =>
       
       val unselected = zipper.slice(f1,t1).slice(f2,t2).unselect
       unselected.length mustEqual elems.length
@@ -895,7 +895,7 @@ class ZipperSpecs extends Specification with ScalaCheck with XMLGenerators with 
       uc.toVectorCase mustEqual texts.slice(f1,t1).slice(f2,t2).toVectorCase
     }
     
-    "update the zipper context correctly for multiple slices in bounds" in check { (from1: Int, to1: Int, from2: Int, to2: Int) =>
+    "update the zipper context correctly for multiple slices in bounds" in prop { (from1: Int, to1: Int, from2: Int, to2: Int) =>
       val f1 = (from1 & Int.MaxValue) % zipper.length
       val t1 = (to1 & Int.MaxValue) % zipper.length
       val slice1 = zipper.slice(f1,t1)

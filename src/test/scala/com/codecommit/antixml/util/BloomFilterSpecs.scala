@@ -28,56 +28,59 @@
 
 package com.codecommit.antixml.util
 
-import org.specs2.mutable._
 import org.specs2.ScalaCheck
-import org.specs2.matcher.{Parameters, Matcher}
+import org.specs2.matcher.Matcher
+import org.specs2.mutable._
+import org.specs2.scalacheck.Parameters
+
 import scala.math._
 
 class BloomFilterSpecs extends Specification with ScalaCheck {
 
   "contains" should {
-    "never give a false negative" in check { xs: List[String] =>
+    "never give a false negative" in prop { xs: List[String] =>
       val filter = BloomFilter(xs)()
-      (filter must contain(_:Any)).forall(xs)
+      (filter must contain(_: Any)).forall(xs)
     }
   }
-  
+
   "containsHash" should {
-    "never give a false negative" in check { (xs: List[String], preN: Int) =>
-      val n = preN & 0xFFF + 512 //Something reasonable
+    "never give a false negative" in prop { (xs: List[String], preN: Int) =>
+      val n = preN & 0xFFF + 512
+      //Something reasonable
       val toHash = BloomFilter.generateHash(n) _
-      
+
       val filter = BloomFilter(xs)(n)
-      (filter must containHash(_:BloomFilter.Hash)).forall(xs map toHash)
+      (filter must containHash(_: BloomFilter.Hash)).forall(xs map toHash)
     }
   }
 
   "++" should {
     "throw an exception on mismatched filter size" in {
-      val filter1 = BloomFilter(List('a, 'b, 'c))(n=6)
-      val filter2 = BloomFilter(List('d, 'e))(n=4)
-      
+      val filter1 = BloomFilter(List('a, 'b, 'c))(n = 6)
+      val filter2 = BloomFilter(List('d, 'e))(n = 4)
+
       (filter1 ++ filter2) must throwAn[IllegalArgumentException]
     }
-    
-    "return a BloomFilter which contains all of each" in check { (xs1: List[String], xs2: List[String]) =>
+
+    "return a BloomFilter which contains all of each" in prop { (xs1: List[String], xs2: List[String]) =>
       val width = (max(xs1.length, xs2.length) + 1) * 2
-      val filter1 = BloomFilter(xs1)(n=width)
-      val filter2 = BloomFilter(xs2)(n=width)
+      val filter1 = BloomFilter(xs1)(n = width)
+      val filter2 = BloomFilter(xs2)(n = width)
       val filter = filter1 ++ filter2
 
-      (filter must contain(_:Any)).forall(xs1)
-      (filter must contain(_:Any)).forall(xs2)
+      (filter must contain(_: Any)).forall(xs1)
+      (filter must contain(_: Any)).forall(xs2)
     }
-    
-    "be commutative" in check { (xs1: List[String], xs2: List[String]) =>
+
+    "be commutative" in prop { (xs1: List[String], xs2: List[String]) =>
       val width = (max(xs1.length, xs2.length) + 1) * 2
-      val filter1 = BloomFilter(xs1)(n=width)
-      val filter2 = BloomFilter(xs2)(n=width)
+      val filter1 = BloomFilter(xs1)(n = width)
+      val filter2 = BloomFilter(xs2)(n = width)
       (filter1 ++ filter2) mustEqual (filter2 ++ filter1)
     }
-    
-    "treat empty filters as identity elements" in check { (xs1: List[String], preN: Int) =>
+
+    "treat empty filters as identity elements" in prop { (xs1: List[String], preN: Int) =>
       val n = preN & 0xFFF + 512
       val filter1 = BloomFilter(xs1)(n)
       val empty = BloomFilter(Seq())(n)
@@ -85,10 +88,12 @@ class BloomFilterSpecs extends Specification with ScalaCheck {
       filter1 mustEqual (empty ++ filter1)
     }
   }
-  
+
   val numProcessors = Runtime.getRuntime.availableProcessors
   implicit val params: Parameters = set(maxSize = (numProcessors * 200), workers = numProcessors)
-  def contain(a: Any): Matcher[BloomFilter] = ((_:BloomFilter).contains(a), (_:BloomFilter).toString+" doesn't contain "+a)
-  def containHash(h: BloomFilter.Hash): Matcher[BloomFilter] = ((_:BloomFilter).containsHash(h), (_:BloomFilter).toString+" doesn't contain hash "+h.hashes)
+
+  def contain(a: Any): Matcher[BloomFilter] = ((_: BloomFilter).contains(a), (_: BloomFilter).toString + " doesn't contain " + a)
+
+  def containHash(h: BloomFilter.Hash): Matcher[BloomFilter] = ((_: BloomFilter).containsHash(h), (_: BloomFilter).toString + " doesn't contain hash " + h.hashes)
 
 }

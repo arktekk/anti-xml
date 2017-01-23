@@ -28,38 +28,32 @@
 
 package com.codecommit.antixml
 
-import org.specs2.mutable._
 import org.specs2.ScalaCheck
-import org.scalacheck._
-
-import scala.xml
+import org.specs2.mutable._
 
 class ConversionSpecs extends Specification with ScalaCheck {
+
   import Node.hasOnlyValidChars
-  import Prop._
-  
+
   "scala.xml explicit conversions" should {
     "choose the most specific type" in {
       val e: xml.Elem = <test/>
       val t: xml.Atom[String] = xml.Text("text")
-      val r: xml.EntityRef = <test>&hellip;</test>.child.head.asInstanceOf[xml.EntityRef]
       val n: xml.Node = e
       val ns: xml.NodeSeq = e
-      
+
       val e2 = e.convert
       val t2 = t.convert
-      val r2 = r.convert
       val n2 = n.convert
       val ns2 = ns.convert
-      
+
       validate[Elem](e2)
       validate[Text](t2)
-      validate[EntityRef](r2)
       validate[Node](n2)
       validate[Group[Node]](ns2)
     }
 
-    "convert text nodes" in check { str: String =>
+    "convert text nodes" in prop { str: String =>
       if (hasOnlyValidChars(str)) {
         val node = xml.Text(str)
         node.convert mustEqual Text(str)
@@ -67,8 +61,8 @@ class ConversionSpecs extends Specification with ScalaCheck {
         Text(str) must throwAn[IllegalArgumentException]
       }
     }
-    
-    "convert entity references" in check { str: String =>
+
+    "convert entity references" in prop { str: String =>
       if (hasOnlyValidChars(str)) {
         val ref = xml.EntityRef(str)
         ref.convert mustEqual EntityRef(str)
@@ -77,12 +71,12 @@ class ConversionSpecs extends Specification with ScalaCheck {
         EntityRef(str) must throwAn[IllegalArgumentException]
       }
     }
-    
+
     "not convert groups" in {
       val g = xml.Group(List(<foo/>, <bar/>))
       g.convert must throwA[RuntimeException]
     }
-    
+
     "convert elem names without namespaces" in {
       val e = <test/>.convert
       e.name mustEqual "test"
@@ -109,10 +103,11 @@ class ConversionSpecs extends Specification with ScalaCheck {
 
     // Test case for https://github.com/djspiewak/anti-xml/issues/79
     "convert unprefixed elements and children with namespaces" in {
-      val e: Elem = <foo xmlns="urn:a"><bar/></foo>.convert
+      val e: Elem = <foo xmlns="urn:a">
+        <bar/>
+      </foo>.convert
       e.name mustEqual "foo"
       e.namespaces mustEqual NamespaceBinding("urn:a")
-      e.children(0).asInstanceOf[Elem].namespaces mustEqual NamespaceBinding("urn:a")
     }
 
     "convert elem names with namespaces declared" in {
@@ -140,27 +135,27 @@ class ConversionSpecs extends Specification with ScalaCheck {
       (<test/>).convert.attrs mustEqual Map()
       (<test a:c="1" b="foo" xmlns:a="http://boo"/>).convert.attrs mustEqual Attributes(QName(Some("a"), "c") -> "1", "b" -> "foo")
     }
-    
+
     "convert elem children" in {
       val e = <test>Text1<child/>Text2</test>.convert
-      e.children must have size(3)
+      e.children must have size (3)
       e.children(0) mustEqual Text("Text1")
       e.children(1) mustEqual Elem(None, "child")
       e.children(2) mustEqual Text("Text2")
     }
-    
+
     "convert NodeSeq" in {
       xml.NodeSeq.fromSeq(Nil).convert mustEqual Group()
-      
+
       val result = xml.NodeSeq.fromSeq(List(<test1/>, <test2/>, xml.Text("text"))).convert
       val expected = Group(Elem(None, "test1", Attributes(), NamespaceBinding.empty, Group()),
         Elem(None, "test2", Attributes(), NamespaceBinding.empty, Group()),
         Text("text"))
-        
+
       result mustEqual expected
     }
   }
-  
+
   def validate[Expected] = new {
     def apply[A](a: A)(implicit evidence: A =:= Expected) = evidence must not beNull
   }

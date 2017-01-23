@@ -82,10 +82,10 @@ class XMLSpecs extends Specification {
       fromSource(Source fromString str) mustEqual fromString(str)
     }
     
-    "load large files without difficulty" in {
-      val is = getClass.getResourceAsStream("/discogs_20110201_labels.xml")
-      fromSource(Source fromInputStream is) must not(throwA[StackOverflowError])
-    }
+//    "load large files without difficulty" in {
+//      val is = getClass.getResourceAsStream("/discogs_20110201_labels.xml")
+//      fromSource(Source fromInputStream is) must not(throwA[StackOverflowError])
+//    }
   }
   
   "fromString" should {

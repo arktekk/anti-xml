@@ -28,72 +28,73 @@
 
 package com.codecommit.antixml
 
-import org.specs2.mutable._
-import org.specs2.ScalaCheck
-import org.specs2.matcher.Parameters
 import org.scalacheck._
+import org.specs2.ScalaCheck
+import org.specs2.mutable._
+import org.specs2.scalacheck.Parameters
+
 import scala.collection.mutable.LinkedHashMap
 
 class AttributesSpecs extends Specification with ScalaCheck with XMLGenerators {
+
   import Prop._
 
   implicit val arbString = Arbitrary(genSaneString)
-  
+
   "attribute sets" should {
-    "define empty on arbitrary instances" in check { attrs: Attributes =>
+    "define empty on arbitrary instances" in prop { attrs: Attributes =>
       val result = attrs.empty
       validate[Attributes](result)
       result must beEmpty
     }
-    
-    "support addition of qname attrs" in check { (attrs: Attributes, name: QName, value: String) =>
+
+    "support addition of qname attrs" in prop { (attrs: Attributes, name: QName, value: String) =>
       val attrsSafe = attrs - name
-      val attrs2:Attributes = attrsSafe + (name -> value)
+      val attrs2: Attributes = attrsSafe + (name -> value)
       attrs2 must havePairs(attrsSafe.toSeq: _*)
       attrs2 must havePair(name -> value)
     }
 
-    "support addition of string attrs" in check { (attrs: Attributes, x: QName, value: String) =>
+    "support addition of string attrs" in prop { (attrs: Attributes, x: QName, value: String) =>
       val name = x.name
       val attrsSafe = attrs - name
-      val attrs2:Attributes = attrsSafe + (name -> value)
+      val attrs2: Attributes = attrsSafe + (name -> value)
       attrs2 must havePairs(attrsSafe.toSeq: _*)
       attrs2 must havePair(QName(None, name) -> value)
     }
 
-    "support multiple addition of qname attrs" in check { (attrs: Attributes, n1: QName, v1: String, n2: QName, v2: String, n3: QName, v3: String) =>
+    "support multiple addition of qname attrs" in prop { (attrs: Attributes, n1: QName, v1: String, n2: QName, v2: String, n3: QName, v3: String) =>
       val attrsSafe = attrs - n1 - n2 - n3
-      val attrs2:Attributes = attrsSafe + (n1 -> v1, n2 -> v2, n3 -> v3)
-      val baseline = Map(attrs.toSeq:_*) + (n1 -> v1, n2 -> v2, n3 -> v3) 
+      val attrs2: Attributes = attrsSafe + (n1 -> v1, n2 -> v2, n3 -> v3)
+      val baseline = Map(attrs.toSeq: _*) + (n1 -> v1, n2 -> v2, n3 -> v3)
       attrs2 must havePairs(baseline.toSeq: _*)
     }
 
-    "support multiple addition of qname attrs" in check { (attrs: Attributes, x1: QName, v1: String, x2: QName, v2: String, x3: QName, v3: String) =>
-      val (n1,n2,n3) = (x1.name,x2.name,x2.name)
+    "support multiple addition of qname attrs" in prop { (attrs: Attributes, x1: QName, v1: String, x2: QName, v2: String, x3: QName, v3: String) =>
+      val (n1, n2, n3) = (x1.name, x2.name, x2.name)
       val attrsSafe = attrs - n1 - n2 - n3
-      val attrs2:Attributes = attrsSafe + (n1 -> v1, n2 -> v2, n3 -> v3)
-      val baseline = Map(attrs.toSeq:_*) + (QName(None,n1) -> v1, QName(None,n2) -> v2, QName(None,n3) -> v3)
+      val attrs2: Attributes = attrsSafe + (n1 -> v1, n2 -> v2, n3 -> v3)
+      val baseline = Map(attrs.toSeq: _*) + (QName(None, n1) -> v1, QName(None, n2) -> v2, QName(None, n3) -> v3)
       attrs2 must havePairs(baseline.toSeq: _*)
     }
 
-    "support update of qname attrs" in check { (attrs: Attributes, name: QName, value: String) =>
+    "support update of qname attrs" in prop { (attrs: Attributes, name: QName, value: String) =>
       val attrsSafe = attrs - name
-      val attrs2:Attributes = attrsSafe.updated(name,value)
+      val attrs2: Attributes = attrsSafe.updated(name, value)
       attrs2 must havePairs(attrsSafe.toSeq: _*)
       attrs2 must havePair(name -> value)
     }
 
-    "support update of string attrs" in check { (attrs: Attributes, x: QName, value: String) =>
+    "support update of string attrs" in prop { (attrs: Attributes, x: QName, value: String) =>
       val name = x.name
       val attrsSafe = attrs - name
-      val attrs2:Attributes = attrsSafe.updated(name,value)
+      val attrs2: Attributes = attrsSafe.updated(name, value)
       attrs2 must havePairs(attrsSafe.toSeq: _*)
       attrs2 must havePair(QName(None, name) -> value)
     }
-    
-    
-    
-    "produce most specific Map with non-String value" in check { attrs: Attributes =>
+
+
+    "produce most specific Map with non-String value" in prop { attrs: Attributes =>
       val value = new AnyRef
       val attrsSafe = attrs - "foo"
       val attrs2 = attrsSafe + (QName(None, "foo") -> value)
@@ -101,15 +102,15 @@ class AttributesSpecs extends Specification with ScalaCheck with XMLGenerators {
       attrs2 must havePairs(attrsSafe.toSeq: _*)
       attrs2 must havePair(QName(None, "foo") -> value)
     }
-    
-    "support removal of qname attrs" in { 
+
+    "support removal of qname attrs" in {
       implicit val data = for {
         attrs <- Arbitrary.arbitrary[Attributes]
         if !attrs.isEmpty
         key <- Gen.oneOf(attrs.keys.toSeq)
       } yield (attrs, key)
-      
-      check { pair: (Attributes, QName) =>
+
+      prop { pair: (Attributes, QName) =>
         val (attrs, key) = pair
         val attrs2 = attrs - key
         val expected = attrs filterKeys (key !=)
@@ -117,53 +118,57 @@ class AttributesSpecs extends Specification with ScalaCheck with XMLGenerators {
         attrs2 must not(beDefinedAt(key))
       }
     }
-    
-    "support retrieval of attributes by qname" in check { (attrs: Attributes, key: QName) =>
+
+    "support retrieval of attributes by qname" in prop { (attrs: Attributes, key: QName) =>
       val result = attrs get key
-      result mustEqual (attrs find { case (`key`, _) => true case _ => false } map { _._2 })
+      result mustEqual (attrs find { case (`key`, _) => true case _ => false } map {
+        _._2
+      })
     }
-    
-    "support retrieval of attributes by string" in check { (attrs: Attributes, key: String) =>
+
+    "support retrieval of attributes by string" in prop { (attrs: Attributes, key: String) =>
       val result = attrs get key
-      result mustEqual (attrs find { case (QName(None, `key`), _) => true case _ => false } map { _._2 })
+      result mustEqual (attrs find { case (QName(None, `key`), _) => true case _ => false } map {
+        _._2
+      })
     }
-    
+
     "produce Attributes from collection utility methods returning compatible results" in {
       val attrs = Attributes("foo" -> "bar", "baz" -> "bin")
       val attrs2 = attrs map { case (k, v) => k -> (v + "42") }
       validate[Attributes](attrs2)
       attrs2 must havePairs(QName(None, "foo") -> "bar42", QName(None, "baz") -> "bin42")
     }
-    
+
     "produce Map from collection utility methods returning incompatible results" in {
       val attrs = Attributes("foo" -> "bar", "baz" -> "bin")
       val attrs2 = attrs map { case (k, v) => k -> 42 }
       validate[Map[QName, Int]](attrs2)
       attrs2 must havePairs(QName(None, "foo") -> 42, QName(None, "baz") -> 42)
     }
-    
-    "preserve build order" in { 
-      forAll(genAttributeList) { entries: List[(QName,String)] =>
-        val attrs = Attributes(entries:_*)
-        val expectedOrder = LinkedHashMap(entries:_*).toList
+
+    "preserve build order" in {
+      forAll(genAttributeList) { entries: List[(QName, String)] =>
+        val attrs = Attributes(entries: _*)
+        val expectedOrder = LinkedHashMap(entries: _*).toList
         //Converting to list just in case equals is overridden
-        List(attrs.toSeq:_*) mustEqual expectedOrder
+        List(attrs.toSeq: _*) mustEqual expectedOrder
       }
     }
   }
-  
+
   "qualified names" should {
-    "implicitly convert from String" in check { str: String =>
+    "implicitly convert from String" in prop { str: String =>
       val qn: QName = str
       qn.prefix must beNone
       qn.name mustEqual str
     }
   }
-  
+
   def validate[Expected] = new {
     def apply[A](a: A)(implicit evidence: A =:= Expected) = evidence must not beNull
   }
-  
+
   val numProcessors = Runtime.getRuntime.availableProcessors
   implicit val params: Parameters = set(workers = numProcessors)
 }

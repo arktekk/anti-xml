@@ -2,6 +2,9 @@
 Anti-XML: The Non-Violent Solution
 ==================================
 
+.. image:: https://travis-ci.org/AL333Z/anti-xml.svg?branch=master
+    :target: https://travis-ci.org/AL333Z/anti-xml
+    
 **Documentation and usage can be found at http://anti-xml.org**
 ** Outdated **
 

@@ -28,6 +28,8 @@
 
 package com.codecommit.antixml
 
+import scala.language.implicitConversions
+
 trait Selector[+A] extends PartialFunction[Node, A]
 
 trait OptimizingSelector[+A] extends Selector[A] {
